@@ -79,7 +79,7 @@ async function fetchUser() {
     repos.value = null;
     reposFork.value = null;
     isLoading.value = false;
-  } catch (e) {
+  } catch (e: any) {
     console.log(e);
     let message = 'Não foi possível buscar informações do usuário';
     if (e.response.status === 404) {
