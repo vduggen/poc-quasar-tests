@@ -327,7 +327,7 @@ watch(
               <QItemLabel class="q-pb-sm" header>Repositórios Github ({{ (repos || []).length }})</QItemLabel>
 
               <div v-if="fetchingRepos">
-                <QItem v-for="index in 10" :key="index">
+                <QItem v-for="index in 5" :key="index">
                   <QItemSection class="gt-sm">
                     <QItemLabel class="q-mt-sm">
                       <QSkeleton type="text" width="20%" />
