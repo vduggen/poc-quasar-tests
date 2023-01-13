@@ -228,7 +228,7 @@ watch(
 
       <QTabPanels v-model="tab" animated style="height: calc(100% - 92px);">
         <QTabPanel v-if="user || isLoading" class="q-pa-none" name="user">
-          <div class="flex justify-center q-pb-md">
+          <div data-test="wrapperUserInfo" class="flex justify-center q-pb-md">
             <QList
               bordered
               separator
