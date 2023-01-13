@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, watch, computed, inject } from 'vue';
-import axios from 'axios';
 import * as quasar from 'quasar';
 import PeopleSearch from './assets/people_search.vue';
-import { userMock, userReposMock } from './mocks';
+import UserGateway from './infra/Gateways/UserGateway';
 
 const $quasar = inject("quasar") as quasar.QVueGlobals;
+const userHttpGateway = inject("userHttpGateway") as UserGateway;
 
 interface Repository {
   created_at: string;
@@ -51,13 +51,7 @@ function getTotalPage(headerLink: string) {
 
 async function fetchRepos(username: string) {
   fetchingRepos.value = true;
-  const { data, headers } = await axios.get(`https://api.github.com/users/${username}/repos`, {
-    params: {
-      sort: 'created_at',
-      content: true,
-      page: currentPage.value
-    }
-  });
+  const { data, headers } = await userHttpGateway.getReposByUsername(username, currentPage.value);
   // const data: Repository[] = await new Promise((resolve) => {
   //   setTimeout(() => resolve(userReposMock as Repository[]), 500)
   // });
@@ -98,7 +92,7 @@ async function fetchUser() {
   try {
     isLoading.value = true;
     tab.value = "user";
-    const { data } = await axios.get(`https://api.github.com/users/${username.value}`);
+    const data = await userHttpGateway.findByUsername(username.value);
     // const data = userMock;
     const month = quasar.date.formatDate(data.created_at, 'MMMM');
     const monthInLowerCase = month.toLowerCase();

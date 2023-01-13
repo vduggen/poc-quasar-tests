@@ -12,9 +12,11 @@ import 'quasar/src/css/index.sass'
 // Assumes your root component is App.vue
 // and placed in same folder as main.js
 import App from './App.vue'
+import UserHttpGateway from './infra/Gateways/UserHttpGateway'
 
 const myApp = createApp(App);
 myApp.provide("quasar", useQuasar());
+myApp.provide("userHttpGateway", new UserHttpGateway());
 
 myApp.use(Quasar, {
   plugins: {
