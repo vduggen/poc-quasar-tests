@@ -36,13 +36,26 @@ const username = ref('');
 const isLoading = ref(false);
 const fetchingRepos = ref(false);
 const tab = ref('user');
+const totalPage = ref(0);
+const currentPage = ref(1);
+
+function getTotalPage(headerLink: string) {
+  const patternNext = /(?<=<)([\S]*)(?=>; rel="Last")/i;
+  const result = headerLink.match(patternNext);
+  if (result) {
+    const patternPage = /(.+page=)([0-9]+)/;
+    return +result[0].replace(patternPage, '$2');
+  }
+  return 0;
+}
 
 async function fetchRepos(username: string) {
   fetchingRepos.value = true;
-  const { data } = await axios.get(`https://api.github.com/users/${username}/repos`, {
+  const { data, headers } = await axios.get(`https://api.github.com/users/${username}/repos`, {
     params: {
       sort: 'created_at',
-      content: true
+      content: true,
+      page: currentPage.value
     }
   });
   // const data: Repository[] = await new Promise((resolve) => {
@@ -68,9 +81,15 @@ async function fetchRepos(username: string) {
     }
     repos.value = reposTmp;
     reposFork.value = reposForkTmp;
+    if (totalPage.value === 0) {
+      const link = headers.link || '';
+      const totalPageResponse = getTotalPage(link);
+      totalPage.value = totalPageResponse;
+    }
   } else {
     repos.value = null;
     reposFork.value = null;
+    totalPage.value = 0;
   }
   fetchingRepos.value = false;
 }
@@ -132,6 +151,15 @@ watch(
     const alreadyExistRepos = repos.value ? repos.value.length > 0 : false;
     const condition = !!(tabName !== 'user' && !reposIsEmpty.value && !alreadyExistRepos);
     if (condition && user.value) {
+      fetchRepos(user.value.login);
+    }
+  }
+)
+
+watch(
+  () => currentPage.value,
+  () => {
+    if (user.value) {
       fetchRepos(user.value.login);
     }
   }
@@ -223,12 +251,12 @@ watch(
 
                   <QSkeleton class="q-mx-auto block" type="text" width="40%" />
 
-                  <div class="flex items-center justify-center">
+                  <div class="flex flex-center">
                     <QIcon name="place" class="q-mr-sm" />
                     <QSkeleton type="text" width="20%" />                  
                   </div>
 
-                  <div class="flex items-center justify-center">
+                  <div class="flex flex-center">
                     <QIcon name="calendar_month" class="q-mr-sm" />
                     <QSkeleton type="text" width="20%" />
                   </div>
@@ -338,7 +366,7 @@ watch(
             <QList
               bordered
               class="rounded-borders full-width"
-              style="max-width: 1024px"
+              style="max-width: 1024px; height: calc(100% - 48px)"
             >
               <QItemLabel class="q-pb-sm" header>Repositórios Github ({{ (repos || []).length }})</QItemLabel>
 
@@ -378,7 +406,7 @@ watch(
                 </QItem>
               </div>
 
-              <div style="height: calc(100% - 40.8px)" v-else>
+              <div style="height: calc(100% - 48px)" v-else>
                 <QScrollArea class="full-width full-height">
                   <div
                     v-for="(repo, index) in repos"
@@ -421,6 +449,14 @@ watch(
                 </QScrollArea>
               </div>
             </QList>
+
+            <div class="q-pt-sm flex flex-center">
+              <QPagination
+                v-model="currentPage"
+                :max="totalPage"
+                input
+              />
+            </div>
           </div>
         </QTabPanel>
 
@@ -523,7 +559,7 @@ watch(
 
     <template v-else>
       <div
-        class="text-center flex items-center justify-center column q-mx-auto"
+        class="text-center flex flex-center column q-mx-auto"
         style="width: 45%; height: calc(100% - 56px)"
       >
         <div class="q-mx-auto" style="width: 240px">
