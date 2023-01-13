@@ -3,6 +3,7 @@ import { ref, watch, computed } from 'vue';
 import axios from 'axios';
 import * as quasar from 'quasar';
 import PeopleSearch from './assets/people_search.vue';
+import { userMock, userReposMock } from './mocks';
 
 const $quasar = quasar.useQuasar();
 
@@ -12,6 +13,7 @@ interface Repository {
   description: string;
   name: string;
   html_url: string;
+  fork: boolean;
 }
 
 interface UserInfo {
@@ -39,12 +41,16 @@ async function fetchRepos(username: string) {
   fetchingRepos.value = true;
   const { data } = await axios.get(`https://api.github.com/users/${username}/repos`, {
     params: {
-      sort: 'created_at'
+      sort: 'created_at',
+      content: true
     }
   });
+  // const data: Repository[] = await new Promise((resolve) => {
+  //   setTimeout(() => resolve(userReposMock as Repository[]), 500)
+  // });
   if (data.length > 0) {
-    const reposTmp = [];
-    const reposForkTmp = [];
+    const reposTmp: Repository[] = [];
+    const reposForkTmp: Repository[] = [];
     for (const repo of data) {
       if (repo.fork) {
         reposForkTmp.push({
@@ -74,6 +80,7 @@ async function fetchUser() {
     isLoading.value = true;
     tab.value = "user";
     const { data } = await axios.get(`https://api.github.com/users/${username.value}`);
+    // const data = userMock;
     const month = quasar.date.formatDate(data.created_at, 'MMMM');
     const monthInLowerCase = month.toLowerCase();
     const year = quasar.date.formatDate(data.created_at, 'YYYY');
@@ -110,24 +117,21 @@ async function openRepo(url: string) {
 }
 
 const reposIsEmpty = computed(() => {
-  if (repos.value) return repos.value.length === 0;
-  return true;
+  const countRepos = user?.value?.public_repos || 0;
+  if (countRepos === 0) return true;
+  return false;
 })
 
 const reposForkIsEmpty = computed(() => {
-  if (reposFork.value) return reposFork.value.length === 0;
-  return true;
+  return (reposFork.value || []).length === 0;
 });
 
 watch(
   () => tab.value,
   (tabName: string) => {
-    if (
-      tabName !== 'user' &&
-      user.value &&
-      user.value.public_repos > 0 &&
-      reposIsEmpty.value
-    ) {
+    const alreadyExistRepos = repos.value ? repos.value.length > 0 : false;
+    const condition = !!(tabName !== 'user' && !reposIsEmpty.value && !alreadyExistRepos);
+    if (condition && user.value) {
       fetchRepos(user.value.login);
     }
   }
@@ -179,8 +183,16 @@ watch(
         narrow-indicator
       >
         <QTab name="user" label="Informações do usuário" />
-        <QTab name="repos" label="Repositórios" />
-        <QTab name="reposFork" label="Repositórios Forks" />
+        <QTab
+          :disable="reposIsEmpty"
+          name="repos"
+          label="Repositórios"
+        />
+        <QTab
+          :disable="reposForkIsEmpty"
+          name="reposFork"
+          label="Repositórios Forks"
+        />
       </QTabs>
 
       <QTabPanels v-model="tab" animated style="height: calc(100% - 92px);">
@@ -317,7 +329,11 @@ watch(
           </div>
         </QTabPanel>
 
-        <QTabPanel class="q-pa-none" name="repos">
+        <QTabPanel
+          :disable="reposIsEmpty"
+          class="q-pa-none"
+          name="repos"
+        >
           <div class="flex justify-center full-height">
             <QList
               bordered
@@ -408,7 +424,11 @@ watch(
           </div>
         </QTabPanel>
 
-        <QTabPanel class="q-pa-none" name="reposFork">
+        <QTabPanel
+          :disable="reposForkIsEmpty"
+          class="q-pa-none"
+          name="reposFork"
+        >
           <div class="flex justify-center full-height">
               <QList
                 bordered
