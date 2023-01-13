@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, inject } from 'vue';
 import axios from 'axios';
 import * as quasar from 'quasar';
 import PeopleSearch from './assets/people_search.vue';
 import { userMock, userReposMock } from './mocks';
 
-const $quasar = quasar.useQuasar();
+const $quasar = inject("quasar") as quasar.QVueGlobals;
 
 interface Repository {
   created_at: string;
@@ -177,6 +177,7 @@ watch(
           <QInput
             v-model="username"
             outlined
+            data-test="username"
             dense
             @keypress.enter="fetchUser"
             label="Username"
@@ -191,6 +192,7 @@ watch(
           <QBtn
             class="full-width full-height"
             color="primary"
+            data-test="buttonFetch"
             @click="fetchUser"
             :loading="isLoading"
           >
@@ -208,6 +210,7 @@ watch(
         active-color="primary"
         indicator-color="primary"
         align="justify"
+        data-test="tabs"
         narrow-indicator
       >
         <QTab name="user" label="Informações do usuário" />
@@ -414,7 +417,7 @@ watch(
                   >
                     <QItem
                       clickable
-                      v-ripple
+                      
                       @click="openRepo(repo.html_url)"
                     >
                       <QItemSection class="gt-sm">
@@ -517,7 +520,7 @@ watch(
                     >
                       <QItem
                         clickable
-                        v-ripple
+                        
                         @click="openRepo(repo.html_url)"
                       >
                         <QItemSection class="gt-sm">
@@ -560,6 +563,7 @@ watch(
     <template v-else>
       <div
         class="text-center flex flex-center column q-mx-auto"
+        data-test="emptyState"
         style="width: 45%; height: calc(100% - 56px)"
       >
         <div class="q-mx-auto" style="width: 240px">
