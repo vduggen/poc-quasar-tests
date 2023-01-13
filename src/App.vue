@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue';
 import axios from 'axios';
 import * as quasar from 'quasar';
+import PeopleSearch from './assets/people_search.vue';
 
 const $quasar = quasar.useQuasar();
 
@@ -36,7 +37,11 @@ const tab = ref('user');
 
 async function fetchRepos(username: string) {
   fetchingRepos.value = true;
-  const { data } = await axios.get(`https://api.github.com/users/${username}/repos`);
+  const { data } = await axios.get(`https://api.github.com/users/${username}/repos`, {
+    params: {
+      sort: 'created_at'
+    }
+  });
   if (data.length > 0) {
     const reposTmp = [];
     const reposForkTmp = [];
@@ -177,244 +182,152 @@ watch(
         <QTab name="repos" label="Repositórios" />
         <QTab name="reposFork" label="Repositórios Forks" />
       </QTabs>
-    </template>
 
-    <QTabPanels v-model="tab" animated style="height: calc(100% - 92px);">
-      <QTabPanel v-if="user || isLoading" class="q-pa-none" name="user">
-        <div class="flex justify-center q-pb-md">
-          <QList
-            bordered
-            separator
-            class="rounded-borders full-width"
-            style="max-width: 1024px"
-          >
-            <QItemLabel
-              class="q-pb-sm"
-              header
+      <QTabPanels v-model="tab" animated style="height: calc(100% - 92px);">
+        <QTabPanel v-if="user || isLoading" class="q-pa-none" name="user">
+          <div class="flex justify-center q-pb-md">
+            <QList
+              bordered
+              separator
+              class="rounded-borders full-width"
+              style="max-width: 1024px"
             >
-              Informações do usuário
-            </QItemLabel>
+              <QItemLabel
+                class="q-pb-sm"
+                header
+              >
+                Informações do usuário
+              </QItemLabel>
 
-            <div class="q-pa-md">
-              <template v-if="isLoading">
-                <QSkeleton
-                  class="q-mx-auto block"
-                  type="QAvatar"
-                  size="94px"
-                />
+              <div class="q-pa-md">
+                <template v-if="isLoading">
+                  <QSkeleton
+                    class="q-mx-auto block"
+                    type="QAvatar"
+                    size="94px"
+                  />
 
-                <QSkeleton class="q-mt-md q-mx-auto block" type="text" width="20%" height="32px" />
+                  <QSkeleton class="q-mt-md q-mx-auto block" type="text" width="20%" height="32px" />
 
-                <QSkeleton class="q-mx-auto block" type="text" width="40%" />
+                  <QSkeleton class="q-mx-auto block" type="text" width="40%" />
 
-                <div class="flex items-center justify-center">
-                  <QIcon name="place" class="q-mr-sm" />
-                  <QSkeleton type="text" width="20%" />                  
-                </div>
-
-                <div class="flex items-center justify-center">
-                  <QIcon name="calendar_month" class="q-mr-sm" />
-                  <QSkeleton type="text" width="20%" />
-                </div>
-                
-                <div class="row flex justify-center q-mt-md">
-                  <div class="col-2 flex items-center column">
-                    <QSkeleton type="text" width="20%" />
-                    <p
-                      class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                    >
-                      Seguidores
-                    </p>
+                  <div class="flex items-center justify-center">
+                    <QIcon name="place" class="q-mr-sm" />
+                    <QSkeleton type="text" width="20%" />                  
                   </div>
 
-                  <div class="col-2 flex items-center column">
+                  <div class="flex items-center justify-center">
+                    <QIcon name="calendar_month" class="q-mr-sm" />
                     <QSkeleton type="text" width="20%" />
-                    <p
-                      class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                    >
-                      Seguindo
-                    </p>
                   </div>
+                  
+                  <div class="row flex justify-center q-mt-md">
+                    <div class="col-2 flex items-center column">
+                      <QSkeleton type="text" width="20%" />
+                      <p
+                        class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
+                      >
+                        Seguidores
+                      </p>
+                    </div>
 
-                  <div
-                    class="col-2 flex items-center column"
+                    <div class="col-2 flex items-center column">
+                      <QSkeleton type="text" width="20%" />
+                      <p
+                        class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
+                      >
+                        Seguindo
+                      </p>
+                    </div>
+
+                    <div
+                      class="col-2 flex items-center column"
+                    >
+                      <QSkeleton type="text" width="20%" />
+                      <p
+                        class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
+                      >
+                        Repositórios Públicos
+                      </p>
+                    </div>
+                  </div>
+                </template>
+
+                <template v-else-if="user">
+                  <QAvatar class="q-mx-auto block" size="94px">
+                    <img :src="user.avatar_url">
+                  </QAvatar>
+
+                  <h5 class="text-center q-mt-md q-mb-none text-weight-medium">{{ user.name }}</h5>
+
+                  <p
+                    v-if="user.bio"
+                    class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
                   >
-                    <QSkeleton type="text" width="20%" />
-                    <p
-                      class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                    >
-                      Repositórios Públicos
-                    </p>
-                  </div>
-                </div>
-              </template>
+                    {{ user.bio }}
+                  </p>
 
-              <template v-else-if="user">
-                <QAvatar class="q-mx-auto block" size="94px">
-                  <img :src="user.avatar_url">
-                </QAvatar>
-
-                <h5 class="text-center q-mt-md q-mb-none text-weight-medium">{{ user.name }}</h5>
-
-                <p
-                  v-if="user.bio"
-                  class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                >
-                  {{ user.bio }}
-                </p>
-
-                <p
-                  v-if="user.location"
-                  class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                >
-                  <QIcon name="place" /> {{ user.location }}
-                </p>
-
-                <p
-                  class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                >
-                  <QIcon name="calendar_month" />
-                  Entrou em {{ user.created_at }}
-                </p>
-                
-                <div class="row flex justify-center q-mt-md">
-                  <div class="col-2">
-                    <h5 class="text-center q-my-none text-weight-medium">{{ user.followers }}</h5>
-                    <p
-                      class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                    >
-                      Seguidores
-                    </p>
-                  </div>
-
-                  <div class="col-2">
-                    <h5 class="text-center q-my-none text-weight-medium">{{ user.following }}</h5>
-                    <p
-                      class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                    >
-                      Seguindo
-                    </p>
-                  </div>
-
-                  <div
-                    class="col-2"
+                  <p
+                    v-if="user.location"
+                    class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
                   >
-                    <h5 class="text-center q-my-none text-weight-medium">{{ user.public_repos }}</h5>
-                    <p
-                      class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
-                    >
-                      Repositórios Públicos
-                    </p>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </QList>
-        </div>
-      </QTabPanel>
+                    <QIcon name="place" /> {{ user.location }}
+                  </p>
 
-      <QTabPanel class="q-pa-none" name="repos">
-        <div class="flex justify-center full-height">
-          <QList
-            bordered
-            class="rounded-borders full-width"
-            style="max-width: 1024px"
-          >
-            <QItemLabel class="q-pb-sm" header>Repositórios Github ({{ (repos || []).length }})</QItemLabel>
-
-            <div v-if="fetchingRepos">
-              <QItem v-for="index in 10" :key="index">
-                <QItemSection class="gt-sm">
-                  <QItemLabel class="q-mt-sm">
-                    <QSkeleton type="text" width="20%" />
-                  </QItemLabel>
-
-                  <QItemLabel caption>
-                    <QSkeleton type="text" width="40%" />
-                  </QItemLabel>
-                </QItemSection>
-
-                <QItemSection class="col-2">
-                  <QItemLabel caption>
-                    <QSkeleton type="text" width="60%" />
-                  </QItemLabel>
-
-                  <QItemLabel>
-                    <QSkeleton type="text" width="75%" />
-                  </QItemLabel>
-                </QItemSection>
-
-                <QItemSection class="col-2">
-                  <QItemLabel caption>
-                    <QSkeleton type="text" width="60%" />
-                  </QItemLabel>
-
-                  <QItemLabel>
-                    <QSkeleton type="text" width="75%" />
-                  </QItemLabel>
-                </QItemSection>
-
-                <QItemSection side class="col-1" />
-              </QItem>
-            </div>
-
-            <div style="height: calc(100% - 40.8px)" v-else>
-              <QScrollArea class="full-width full-height">
-                <div
-                  v-for="(repo, index) in repos"
-                  :key="index"
-                >
-                  <QItem
-                    clickable
-                    v-ripple
-                    @click="openRepo(repo.html_url)"
+                  <p
+                    class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
                   >
-                    <QItemSection class="gt-sm">
-                      <QItemLabel class="q-mt-sm">{{ repo.name }}</QItemLabel>
-                      <QItemLabel v-if="repo.description" caption>{{ repo.description }}</QItemLabel>
-                    </QItemSection>
+                    <QIcon name="calendar_month" />
+                    Entrou em {{ user.created_at }}
+                  </p>
+                  
+                  <div class="row flex justify-center q-mt-md">
+                    <div class="col-2">
+                      <h5 class="text-center q-my-none text-weight-medium">{{ user.followers }}</h5>
+                      <p
+                        class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
+                      >
+                        Seguidores
+                      </p>
+                    </div>
 
-                    <QItemSection class="col-2">
-                      <QItemLabel caption>Data de criação:</QItemLabel>
-                      <QItemLabel>{{ repo.created_at }}</QItemLabel>
-                    </QItemSection>
+                    <div class="col-2">
+                      <h5 class="text-center q-my-none text-weight-medium">{{ user.following }}</h5>
+                      <p
+                        class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
+                      >
+                        Seguindo
+                      </p>
+                    </div>
 
-                    <QItemSection class="col-2">
-                      <QItemLabel caption>Ultima atualização:</QItemLabel>
-                      <QItemLabel>{{ repo.updated_at }}</QItemLabel>
-                    </QItemSection>
+                    <div
+                      class="col-2"
+                    >
+                      <h5 class="text-center q-my-none text-weight-medium">{{ user.public_repos }}</h5>
+                      <p
+                        class="text-center text-subtitle2 text-weight-regular text-grey-7 q-mb-none"
+                      >
+                        Repositórios Públicos
+                      </p>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </QList>
+          </div>
+        </QTabPanel>
 
-                    <QItemSection side class="col-1">
-                      <QBtn
-                        size="12px"
-                        flat
-                        dense
-                        round
-                        icon="open_in_new"
-                        @click="openRepo(repo.html_url)"
-                      />
-                    </QItemSection>
-                  </QItem>
-
-                  <QSeparator />
-                </div>
-              </QScrollArea>
-            </div>
-          </QList>
-        </div>
-      </QTabPanel>
-
-      <QTabPanel class="q-pa-none" name="reposFork">
-        <div class="flex justify-center full-height">
+        <QTabPanel class="q-pa-none" name="repos">
+          <div class="flex justify-center full-height">
             <QList
               bordered
               class="rounded-borders full-width"
               style="max-width: 1024px"
             >
-              <QItemLabel class="q-pb-sm" header>Forks ({{ (reposFork || []).length }})</QItemLabel>
+              <QItemLabel class="q-pb-sm" header>Repositórios Github ({{ (repos || []).length }})</QItemLabel>
 
               <div v-if="fetchingRepos">
-                <QItem v-for="index in 5" :key="index">
+                <QItem v-for="index in 10" :key="index">
                   <QItemSection class="gt-sm">
                     <QItemLabel class="q-mt-sm">
                       <QSkeleton type="text" width="20%" />
@@ -452,7 +365,7 @@ watch(
               <div style="height: calc(100% - 40.8px)" v-else>
                 <QScrollArea class="full-width full-height">
                   <div
-                      v-for="(repo, index) in reposFork"
+                    v-for="(repo, index) in repos"
                     :key="index"
                   >
                     <QItem
@@ -486,15 +399,120 @@ watch(
                         />
                       </QItemSection>
                     </QItem>
-                    
+
                     <QSeparator />
                   </div>
                 </QScrollArea>
               </div>
             </QList>
+          </div>
+        </QTabPanel>
+
+        <QTabPanel class="q-pa-none" name="reposFork">
+          <div class="flex justify-center full-height">
+              <QList
+                bordered
+                class="rounded-borders full-width"
+                style="max-width: 1024px"
+              >
+                <QItemLabel class="q-pb-sm" header>Forks ({{ (reposFork || []).length }})</QItemLabel>
+
+                <div v-if="fetchingRepos">
+                  <QItem v-for="index in 5" :key="index">
+                    <QItemSection class="gt-sm">
+                      <QItemLabel class="q-mt-sm">
+                        <QSkeleton type="text" width="20%" />
+                      </QItemLabel>
+
+                      <QItemLabel caption>
+                        <QSkeleton type="text" width="40%" />
+                      </QItemLabel>
+                    </QItemSection>
+
+                    <QItemSection class="col-2">
+                      <QItemLabel caption>
+                        <QSkeleton type="text" width="60%" />
+                      </QItemLabel>
+
+                      <QItemLabel>
+                        <QSkeleton type="text" width="75%" />
+                      </QItemLabel>
+                    </QItemSection>
+
+                    <QItemSection class="col-2">
+                      <QItemLabel caption>
+                        <QSkeleton type="text" width="60%" />
+                      </QItemLabel>
+
+                      <QItemLabel>
+                        <QSkeleton type="text" width="75%" />
+                      </QItemLabel>
+                    </QItemSection>
+
+                    <QItemSection side class="col-1" />
+                  </QItem>
+                </div>
+
+                <div style="height: calc(100% - 40.8px)" v-else>
+                  <QScrollArea class="full-width full-height">
+                    <div
+                        v-for="(repo, index) in reposFork"
+                      :key="index"
+                    >
+                      <QItem
+                        clickable
+                        v-ripple
+                        @click="openRepo(repo.html_url)"
+                      >
+                        <QItemSection class="gt-sm">
+                          <QItemLabel class="q-mt-sm">{{ repo.name }}</QItemLabel>
+                          <QItemLabel v-if="repo.description" caption>{{ repo.description }}</QItemLabel>
+                        </QItemSection>
+
+                        <QItemSection class="col-2">
+                          <QItemLabel caption>Data de criação:</QItemLabel>
+                          <QItemLabel>{{ repo.created_at }}</QItemLabel>
+                        </QItemSection>
+
+                        <QItemSection class="col-2">
+                          <QItemLabel caption>Ultima atualização:</QItemLabel>
+                          <QItemLabel>{{ repo.updated_at }}</QItemLabel>
+                        </QItemSection>
+
+                        <QItemSection side class="col-1">
+                          <QBtn
+                            size="12px"
+                            flat
+                            dense
+                            round
+                            icon="open_in_new"
+                            @click="openRepo(repo.html_url)"
+                          />
+                        </QItemSection>
+                      </QItem>
+                      
+                      <QSeparator />
+                    </div>
+                  </QScrollArea>
+                </div>
+              </QList>
+          </div>
+        </QTabPanel>
+      </QTabPanels>
+    </template>
+
+    <template v-else>
+      <div
+        class="text-center flex items-center justify-center column q-mx-auto"
+        style="width: 45%; height: calc(100% - 56px)"
+      >
+        <div class="q-mx-auto" style="width: 240px">
+          <PeopleSearch />
         </div>
-      </QTabPanel>
-    </QTabPanels>
+        <h4 class="q-mb-sm text-weight-bold">Busque informações do seu Github</h4>
+        <p class="text-grey-7">Digite no input acima o seu username que é utilizado no Github para buscar informações</p>
+      </div>
+    </template>
   </div>
 </template>
 
