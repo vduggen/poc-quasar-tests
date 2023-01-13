@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { useQuasar, Quasar } from 'quasar';
 import App from "../App.vue"
-import UserHttpGateway from '../infra/Gateways/UserHttpGateway';
+import UserLocalGateway from '../infra/Gateways/UserLocalGateway';
 
 function getWrapper() {
     return mount(App, {
@@ -9,7 +9,7 @@ function getWrapper() {
             plugins: [Quasar],
             provide: {
                 quasar: useQuasar(),
-                userHttpGateway: new UserHttpGateway()
+                userHttpGateway: new UserLocalGateway()
             }
         }
     });
@@ -26,10 +26,7 @@ describe('<App />', () => {
         const usernameInput = wrapper.find('[data-test=username]');
         usernameInput.setValue('vduggen');
         const buttonFetch = wrapper.find('[data-test=buttonFetch]');
-        buttonFetch.trigger('click');
-        await new Promise((resolve) => {
-            setTimeout(() => resolve(''), 300);
-        })
+        await buttonFetch.trigger('click');
         expect(wrapper.find('[data-test=emptyState]').exists()).toBe(false);
     })
 
@@ -38,10 +35,7 @@ describe('<App />', () => {
         const usernameInput = wrapper.find('[data-test=username]');
         usernameInput.setValue('vduggen');
         const buttonFetch = wrapper.find('[data-test=buttonFetch]');
-        buttonFetch.trigger('click');
-        await new Promise((resolve) => {
-            setTimeout(() => resolve(''), 300);
-        })
+        await buttonFetch.trigger('click');
         expect(wrapper.find('[data-test=tabs]').exists()).toBe(true);
         expect(wrapper.find('[data-test=wrapperUserInfo]').exists()).toBe(true);
     })
