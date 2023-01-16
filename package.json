@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
-    "test": "vitest --dom"
+    "test:dom": "vitest --dom",
+    "test": "vitest"
   },
   "dependencies": {
     "@quasar/extras": "^1.15.9",
