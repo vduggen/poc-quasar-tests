@@ -32,11 +32,15 @@ export default class RepositoriesList {
   }
 
   addRepository(repository: Repository) {
-    this.repos.push(repository);
+    if (!repository.fork) {
+      this.repos.push(repository);
+    };
   }
 
   addFork(fork: Repository) {
-    this.forks.push(fork);
+    if (fork.fork) {
+      this.forks.push(fork);
+    };
   }
 
   reposIsEmpty() {
