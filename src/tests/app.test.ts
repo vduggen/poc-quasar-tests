@@ -1,15 +1,24 @@
 import { mount } from '@vue/test-utils';
-import { useQuasar, Quasar } from 'quasar';
+import { Notify, Quasar } from 'quasar';
+import quasarLang from 'quasar/lang/pt-BR'
 import App from "../App.vue"
-import UserLocalGateway from '../infra/Gateways/UserLocalGateway';
+import UserLocalGateway from '../gateways/UserLocalGateway';
+import * as quasar from 'quasar';
 
 function getWrapper() {
     return mount(App, {
         global: {
-            plugins: [Quasar],
+            plugins: [[Quasar, {
+                plugins: {
+                  Notify
+                },
+                lang: quasarLang,
+            }]],
             provide: {
-                quasar: useQuasar(),
-                userHttpGateway: new UserLocalGateway()
+                quasar: Quasar,
+                Notify: quasar.Notify,
+                Date: quasar.date,
+                userGateway: new UserLocalGateway()
             }
         }
     });
@@ -38,5 +47,15 @@ describe('<App />', () => {
         await buttonFetch.trigger('click');
         expect(wrapper.find('[data-test=tabs]').exists()).toBe(true);
         expect(wrapper.find('[data-test=wrapperUserInfo]').exists()).toBe(true);
+    })
+
+    it('Caso o usuário não tiver nenhum repositório a aba de repositórios e forks devem estar desabilitadas', async () => {
+        const wrapper = getWrapper();
+        const usernameInput = wrapper.find('[data-test=username]');
+        usernameInput.setValue('brunorovela');
+        const buttonFetch = wrapper.find('[data-test=buttonFetch]');
+        await buttonFetch.trigger('click');
+        expect(wrapper.find('[data-test=tabRepos]').classes()).toContain('disabled');
+        expect(wrapper.find('[data-test=tabReposFork]').classes()).toContain('disabled');
     })
 })
