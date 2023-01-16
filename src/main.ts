@@ -1,29 +1,28 @@
-import { createApp } from 'vue'
-import { Quasar, Notify, useQuasar } from 'quasar'
-import quasarLang from 'quasar/lang/pt-BR'
+import { createApp } from 'vue';
 
-// Import icon libraries
-import '@quasar/extras/roboto-font/roboto-font.css'
-import '@quasar/extras/material-icons/material-icons.css'
+import { Quasar, Notify, date, useQuasar } from 'quasar';
+import quasarLang from 'quasar/lang/pt-BR';
+import '@quasar/extras/roboto-font/roboto-font.css';
+import '@quasar/extras/material-icons/material-icons.css';
+import 'quasar/src/css/index.sass';
 
-// Import Quasar css
-import 'quasar/src/css/index.sass'
-
-// Assumes your root component is App.vue
-// and placed in same folder as main.js
-import App from './App.vue'
-import UserHttpGateway from './infra/Gateways/UserHttpGateway'
+import App from './App.vue';
+import UserHttpGateway from './gateways/UserHttpGateway';
+import NotificationAdapter from './infra/NotificationAdapter';
 
 const myApp = createApp(App);
-myApp.provide("quasar", useQuasar());
-myApp.provide("userHttpGateway", new UserHttpGateway());
+
+const notification = new NotificationAdapter();
+
+myApp.provide("Date", date);
+myApp.provide("notification", notification);
+myApp.provide("userGateway", new UserHttpGateway(notification));
 
 myApp.use(Quasar, {
   plugins: {
     Notify
-  }, // import Quasar plugins and add here
+  },
   lang: quasarLang,
 })
 
-// Assumes you have a <div id="app"></div> in your index.html
 myApp.mount('#app')
