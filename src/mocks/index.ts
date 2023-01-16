@@ -1,2 +1,2 @@
-export { default as userMock } from './user.json';
-export { default as userReposMock } from './userRepos.json';
+export * as userMock from './user';
+export * as userReposMock from './userRepos';
